@@ -1,3 +1,4 @@
+using System.Reflection;
 using HarmonyLib;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Multiplayer.Game;
@@ -6,12 +7,11 @@ using QuickReload.Multiplayer;
 
 namespace QuickReload;
 
-[HarmonyPatch(typeof(RunManager), nameof(RunManager.InitializeRunLobby))]
 static class QuickReloadNetworkPatch
 {
-    static void Postfix(RunManager __instance)
+    internal static void RegisterHandler(RunManager __instance)
     {
-        Log.Info($"[QUICKRELOAD]: RunManager.InitializeRunLobby postfix called on {__instance.NetService.Type}. netId={__instance.NetService.NetId}");
+        Log.Info($"[QUICKRELOAD]: RunManager lobby setup postfix called on {__instance.NetService.Type}. netId={__instance.NetService.NetId}");
         if (__instance.NetService.Type != NetGameType.Host && __instance.NetService.Type != NetGameType.Client)
         {
             Log.Info("[QUICKRELOAD]: Not a multiplayer run, skipping QuickReload message handler registration.");
@@ -34,4 +34,16 @@ static class QuickReloadNetworkPatch
         QuickReloadState.SetPendingRestart(message.playerId);
         Log.Info("[QUICKRELOAD]: QuickReload pending state set for client.");
     }
+}
+
+[HarmonyPatch(typeof(RunManager), nameof(RunManager.SetUpNewMultiPlayer))]
+static class QuickReloadNetworkPatch_New
+{
+    static void Postfix(RunManager __instance) => QuickReloadNetworkPatch.RegisterHandler(__instance);
+}
+
+[HarmonyPatch(typeof(RunManager), nameof(RunManager.SetUpSavedMultiPlayer))]
+static class QuickReloadNetworkPatch_Saved
+{
+    static void Postfix(RunManager __instance) => QuickReloadNetworkPatch.RegisterHandler(__instance);
 }

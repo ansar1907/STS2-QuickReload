@@ -91,7 +91,7 @@ static class QuickReloadRunner
 
         try
         {
-            RunManager.Instance.SetUpSavedSinglePlayer(runState, serializableRun);
+            await RunManager.Instance.SetUpSavedSinglePlayer(runState, serializableRun);
             SfxCmd.Play(runState.Players[0].Character.CharacterTransitionSfx);
             game.ReactionContainer.InitializeNetworking((INetGameService)new NetSingleplayerGameService());
             await game.LoadRun(runState, serializableRun.PreFinishedRoom);
